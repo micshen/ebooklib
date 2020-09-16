@@ -15,6 +15,8 @@
 # along with EbookLib.  If not, see <http://www.gnu.org/licenses/>.
 
 import zipfile
+from io import BytesIO
+
 import six
 import logging
 import uuid
@@ -1369,6 +1371,18 @@ class EpubWriter(object):
 
         self.out.close()
 
+    def write_bytestream(self):
+        bytes = BytesIO()
+        # check for the option allowZip64
+        self.out = zipfile.ZipFile(bytes, 'w', zipfile.ZIP_DEFLATED)
+        self.out.writestr('mimetype', 'application/epub+zip', compress_type=zipfile.ZIP_STORED)
+
+        self._write_container()
+        self._write_opf()
+        self._write_items()
+
+        self.out.close()
+        return bytes.getvalue()
 
 class EpubReader(object):
     DEFAULT_OPTIONS = {}
